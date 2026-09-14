@@ -12,8 +12,8 @@ pipeline {
     environment {
         // Change this to your Docker Hub username and image name
         DOCKER_IMAGE_NAME = "devops-cicd-app"
-        DOCKER_HUB_USER   = "harshudevops" // Replace with your Docker Hub username
-        DOCKER_CREDS_ID   = "dockerhub-credentials" // Jenkins credential ID for Docker Hub
+        DOCKER_HUB_USER   = "harshu9671"
+        DOCKER_CREDS_ID   = "dockerhub-credentials"
         IMAGE_TAG         = "${BUILD_NUMBER}-${GIT_COMMIT.take(7)}"
         FULL_IMAGE_NAME   = "${DOCKER_HUB_USER}/${DOCKER_IMAGE_NAME}"
     }
