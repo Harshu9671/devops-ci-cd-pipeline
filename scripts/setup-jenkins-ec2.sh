@@ -57,9 +57,9 @@ else
     echo "Docker is already installed."
 fi
 
-# 4. Install Java 17 (Required by Jenkins)
-echo "==> Installing Java 17 OpenJDK..."
-sudo apt-get install -y openjdk-17-jdk
+# 4. Install Java 21 (Required by Jenkins)
+echo "==> Installing Java 21 OpenJDK..."
+sudo apt-get install -y openjdk-21-jdk
 
 # 5. Install Jenkins
 echo "==> Adding Jenkins repository key & repository..."
