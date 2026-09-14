@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevOps CI/CD Pipeline Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #121826;
+      --bg-card: #1a2234;
+      --bg-card-hover: #222d44;
+      --border-color: #2a3652;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.35);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.3);
+      --warning: #f59e0b;
+      --accent-purple: #8b5cf6;
+      --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 2.5rem;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .brand-title h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1rem;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 9999px;
+      color: var(--success);
+      font-size: 0.875rem;
+      font-weight: 600;
+      box-shadow: 0 0 15px var(--success-glow);
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* Pipeline Visualization Section */
+    .pipeline-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.75rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .pipeline-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .pipeline-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .pipeline-stages {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+
+    .stage-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .stage-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+
+    .stage-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stage-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .stage-tag {
+      font-size: 0.75rem;
+      color: var(--success);
+      font-family: var(--font-mono);
+    }
+
+    /* Metrics Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .card-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-main);
+      font-family: var(--font-mono);
+    }
+
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    /* Interactive API Testing Box */
+    .action-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.75rem;
+    }
+
+    .action-panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .btn:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .console-output {
+      background: #080c14;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #38bdf8;
+      max-height: 220px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand-title">
+        <span style="font-size: 2rem;">🚀</span>
+        <div>
+          <h1>CI/CD Automated Deployment</h1>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Git &bull; Jenkins &bull; Docker &bull; AWS EC2</p>
+        </div>
+      </div>
+      <div class="status-badge">
+        <div class="pulse-dot"></div>
+        <span id="healthStatusText">SYSTEM HEALTHY</span>
+      </div>
+    </header>
+
+    <!-- Pipeline Visualizer -->
+    <div class="pipeline-container">
+      <div class="pipeline-header">
+        <div class="pipeline-title">⚡ End-to-End Automated Pipeline Flow</div>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Declarative Jenkins Pipeline</span>
+      </div>
+      <div class="pipeline-stages">
+        <div class="stage-card">
+          <div class="stage-icon">🐙</div>
+          <div class="stage-name">1. Git Push</div>
+          <div class="stage-tag">Webhook Trigger</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-icon">🧪</div>
+          <div class="stage-name">2. Automated Tests</div>
+          <div class="stage-tag">Jest Unit Tests</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-icon">🐳</div>
+          <div class="stage-name">3. Docker Build</div>
+          <div class="stage-tag">Multi-Stage Build</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-icon">📦</div>
+          <div class="stage-name">4. Push Image</div>
+          <div class="stage-tag">Docker Hub</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-icon">☁️</div>
+          <div class="stage-name">5. Deploy to AWS</div>
+          <div class="stage-tag">EC2 Container</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live System Metrics -->
+    <div class="grid">
+      <div class="card">
+        <div>
+          <div class="card-label">Application Version</div>
+          <div class="card-value" id="valAppVersion">v1.0.0</div>
+        </div>
+        <div class="card-subtitle">Automated via Jenkins Build #</div>
+      </div>
+      <div class="card">
+        <div>
+          <div class="card-label">Server Platform</div>
+          <div class="card-value" id="valPlatform">Linux (AWS EC2)</div>
+        </div>
+        <div class="card-subtitle" id="valHostname">Container ID: loading...</div>
+      </div>
+      <div class="card">
+        <div>
+          <div class="card-label">Node.js Runtime</div>
+          <div class="card-value" id="valNodeVersion">v20+</div>
+        </div>
+        <div class="card-subtitle">Optimized Alpine Image</div>
+      </div>
+      <div class="card">
+        <div>
+          <div class="card-label">Live Uptime</div>
+          <div class="card-value" id="valUptime">0s</div>
+        </div>
+        <div class="card-subtitle">Zero-downtime deployment</div>
+      </div>
+    </div>
+
+    <!-- Live Health Check & Endpoint Verification -->
+    <div class="action-panel">
+      <div class="action-panel-header">
+        <div>
+          <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">Live Health & Smoke Test Console</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Used by Jenkins post-deployment stage to verify application health.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn" id="btnCheckHealth">⚡ Ping /health</button>
+          <button class="btn" style="background: #475569;" id="btnCheckInfo">🔍 Fetch /api/info</button>
+        </div>
+      </div>
+      <div class="console-output" id="consoleLog">Click a button above to run an instant endpoint test...</div>
+    </div>
+
+    <footer>
+      <p>Built for DevOps Portfolio &bull; AWS Free Tier &bull; Jenkins Pipeline & Docker Automation</p>
+    </footer>
+  </div>
+
+  <script>
+    const consoleLog = document.getElementById('consoleLog');
+
+    async function loadInfo() {
+      try {
+        const res = await fetch('/api/info');
+        const data = await res.json();
+        document.getElementById('valAppVersion').innerText = data.version;
+        document.getElementById('valPlatform').innerText = data.platform;
+        document.getElementById('valHostname').innerText = `Host: ${data.hostname}`;
+        document.getElementById('valNodeVersion').innerText = data.nodeVersion;
+        document.getElementById('valUptime').innerText = `${data.uptimeSeconds}s`;
+      } catch (err) {
+        console.error('Error fetching info', err);
+      }
+    }
+
+    document.getElementById('btnCheckHealth').addEventListener('click', async () => {
+      consoleLog.innerText = 'Pinging /health endpoint...';
+      try {
+        const start = Date.now();
+        const res = await fetch('/health');
+        const data = await res.json();
+        const latency = Date.now() - start;
+        consoleLog.innerText = `[HTTP ${res.status} OK] Response (${latency}ms):\n` + JSON.stringify(data, null, 2);
+      } catch (err) {
+        consoleLog.innerText = `Error: ${err.message}`;
+      }
+    });
+
+    document.getElementById('btnCheckInfo').addEventListener('click', async () => {
+      consoleLog.innerText = 'Querying /api/info endpoint...';
+      try {
+        const start = Date.now();
+        const res = await fetch('/api/info');
+        const data = await res.json();
+        const latency = Date.now() - start;
+        consoleLog.innerText = `[HTTP ${res.status} OK] Response (${latency}ms):\n` + JSON.stringify(data, null, 2);
+      } catch (err) {
+        consoleLog.innerText = `Error: ${err.message}`;
+      }
+    });
+
+    // Auto load on init and update uptime every 10s
+    loadInfo();
+    setInterval(loadInfo, 10000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "devops-cicd-demo-app",
+  "version": "1.0.0",
+  "description": "Production-ready web application for End-to-End CI/CD pipeline demonstration",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node ./node_modules/jest/bin/jest.js --detectOpenHandles --forceExit"
+  },
+  "keywords": ["devops", "ci-cd", "jenkins", "docker", "aws"],
+  "author": "DevOps Student",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  }
+}
