@@ -63,8 +63,11 @@ sudo apt-get install -y openjdk-17-jdk
 
 # 5. Install Jenkins
 echo "==> Adding Jenkins repository key & repository..."
-sudo curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /etc/apt/trusted.gpg.d/jenkins.asc > /dev/null
-echo "deb https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo gpg --dearmor -o /etc/apt/keyrings/jenkins.gpg --yes
+sudo chmod a+r /etc/apt/keyrings/jenkins.gpg
+
+echo "deb [signed-by=/etc/apt/keyrings/jenkins.gpg] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 
 sudo apt-get update -y
 sudo apt-get install -y jenkins
