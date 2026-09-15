@@ -111,16 +111,8 @@ Read the comprehensive step-by-step guide in [docs/STEP_BY_STEP_GUIDE.md](docs/S
 6. **Set up GitHub Webhook**: Add payload URL `http://<YOUR-EC2-PUBLIC-IP>:8080/github-webhook/`.
 7. **Commit & Push**: Watch the pipeline automatically build and deploy!
 
----
 
-## 🎓 Preparing for DevOps Interviews?
-
-Check out the dedicated [DevOps Interview Guide](docs/INTERVIEW_GUIDE.md) covering:
-- How to explain this project in an interview (60-second pitch)
-- How to answer questions on swap memory, Docker security, zero-downtime deployments, webhooks vs polling, rollbacks, and secrets management.
-- Ready-to-use resume bullet points.
-
-👤 Author
+👤 Author:
 GitHub:[https://github.com/Harshu9671]
 
 ## 📄 License
