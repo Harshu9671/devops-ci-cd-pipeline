@@ -10,12 +10,23 @@ SWAP_SIZE="2G"
 SWAP_FILE="/swapfile"
 
 echo "==> Checking existing swap space..."
-if free -h | grep -q "Swap: *0B"; then
-    echo "==> No active swap detected. Creating ${SWAP_SIZE} swap file..."
-    sudo fallocate -l "${SWAP_SIZE}" "${SWAP_FILE}" || sudo dd if=/dev/zero of="${SWAP_FILE}" bs=1M count=2048
-    sudo chmod 600 "${SWAP_FILE}"
-    sudo mkswap "${SWAP_FILE}"
-    sudo swapon "${SWAP_FILE}"
+if swapon --show --noheadings | grep -q .; then
+    echo "==> Active swap space already present:"
+    free -h
+else
+    echo "==> No active swap detected. Creating or activating ${SWAP_SIZE} swap file..."
+    if [[ ! -f "${SWAP_FILE}" ]]; then
+        sudo fallocate -l "${SWAP_SIZE}" "${SWAP_FILE}" || sudo dd if=/dev/zero of="${SWAP_FILE}" bs=1M count=2048
+        sudo chmod 600 "${SWAP_FILE}"
+    else
+        sudo chmod 600 "${SWAP_FILE}"
+    fi
+
+    # Reuse a valid existing swap file; format it only when activation fails.
+    if ! sudo swapon "${SWAP_FILE}"; then
+        sudo mkswap "${SWAP_FILE}"
+        sudo swapon "${SWAP_FILE}"
+    fi
 
     # Make swap permanent across reboots
     if ! grep -q "${SWAP_FILE}" /etc/fstab; then
@@ -27,8 +38,5 @@ if free -h | grep -q "Swap: *0B"; then
     echo "vm.swappiness=10" | sudo tee -a /etc/sysctl.conf
 
     echo "==> Swap space created successfully!"
-    free -h
-else
-    echo "==> Active swap space already present:"
     free -h
 fi

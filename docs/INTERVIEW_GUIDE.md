@@ -6,7 +6,7 @@ This guide prepares you to speak confidently about this project in technical int
 
 ## 🌟 1. The 60-Second Elevator Pitch
 
-> *"In this project, I engineered an automated End-to-End CI/CD pipeline using GitHub, Jenkins, Docker, and AWS EC2. Whenever a developer pushes code to GitHub, a webhook triggers a declarative Jenkins pipeline. Jenkins runs automated unit tests with Jest, builds an optimized multi-stage Docker container, pushes it to Docker Hub, and performs a zero-downtime rolling container deployment onto an AWS EC2 instance. The pipeline finishes with automated health checks on the `/health` endpoint and triggers email notifications. To optimize for cost on AWS Free Tier (t2.micro), I solved the Linux OOM memory bottleneck by automating a 2GB virtual swap space."*
+> *"In this project, I engineered an automated End-to-End CI/CD pipeline using GitHub, Jenkins, Docker, and AWS EC2. Whenever a developer pushes code to GitHub, a webhook triggers a declarative Jenkins pipeline. Jenkins runs automated unit tests with Jest, builds an optimized multi-stage Docker container, pushes it to Docker Hub, and performs a rollback-safe container deployment onto an AWS EC2 instance. The pipeline finishes with automated health checks on the `/health` endpoint and triggers email notifications. To optimize for cost on AWS Free Tier (t2.micro), I solved the Linux OOM memory bottleneck by automating a 2GB virtual swap space."*
 
 ---
 
@@ -68,13 +68,9 @@ This guide prepares you to speak confidently about this project in technical int
 
 ---
 
-### Q7: How does your deployment script achieve zero-downtime or minimal downtime?
+### Q7: How does your deployment script achieve minimal downtime and recover from a bad release?
 **Answer:**
-> *"In our deployment script `deploy.sh`:
-> 1. We pre-pull the new Docker image before touching the running container.
-> 2. We trigger graceful termination of the old container (`SIGTERM`), giving active HTTP requests time to drain.
-> 3. We spin up the new container with restart policies and immediately execute an automated smoke test against the `/health` endpoint with retry backoff.
-> In larger setups, this can be extended to Blue/Green deployment or AWS ECS/EKS with a Application Load Balancer (ALB)."*
+> *"In our deployment script `deploy.sh`, we pre-pull the new Docker image before stopping the current container, then start the replacement and verify `/health` with retries. If startup or health verification fails, the script removes the bad container and restores the previous image. This keeps the interruption small on a single-host deployment and provides a deterministic rollback. True zero-downtime blue/green switching would require a reverse proxy or an AWS load balancer."*
 
 ---
 

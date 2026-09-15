@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Continuous Deployment (CD) Script
-# Pulls latest image from registry, replaces old container, and verifies health
+# Pulls an image, replaces the running container, verifies health, and rolls back
+# automatically if the replacement cannot start or serve traffic.
 # ==============================================================================
 
 set -euo pipefail
@@ -17,6 +18,11 @@ if [[ -z "$IMAGE_NAME" ]]; then
     exit 1
 fi
 
+if [[ ! "$IMAGE_NAME" =~ ^[^:]+/[^:]+:.+$ ]]; then
+    echo "❌ Error: image must use the form <registry-user>/<image>:<tag>"
+    exit 1
+fi
+
 echo "======================================================================"
 echo "🚀 Starting Deployment for: ${IMAGE_NAME}"
 echo "======================================================================"
@@ -25,23 +31,52 @@ echo "======================================================================"
 echo "==> Pulling Docker image: ${IMAGE_NAME}..."
 docker pull "${IMAGE_NAME}"
 
-# Step 2: Stop and remove existing container if running
-if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+# Step 2: Record the current image so a failed release can be rolled back
+OLD_IMAGE=""
+if docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
+    OLD_IMAGE="$(docker container inspect --format '{{.Config.Image}}' "$CONTAINER_NAME")"
     echo "==> Stopping existing container: ${CONTAINER_NAME}..."
     docker stop "${CONTAINER_NAME}" || true
     echo "==> Removing existing container..."
     docker rm "${CONTAINER_NAME}" || true
 fi
 
+# Restores the previous image when the new container fails to start or become healthy.
+rollback() {
+    local reason="$1"
+    echo "❌ ${reason}"
+    docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
+
+    if [[ -n "$OLD_IMAGE" ]]; then
+        echo "==> Rolling back to ${OLD_IMAGE}..."
+        if ! docker run -d \
+            --name "${CONTAINER_NAME}" \
+            --restart unless-stopped \
+            -p "${HOST_PORT}:${CONTAINER_PORT}" \
+            -e NODE_ENV=production \
+            -e APP_VERSION="${OLD_IMAGE##*:}" \
+            "${OLD_IMAGE}" >/dev/null; then
+            echo "❌ Rollback container failed to start."
+            exit 1
+        fi
+        echo "✅ Previous container restored."
+    else
+        echo "ℹ️  No previous container was available to restore."
+    fi
+    exit 1
+}
+
 # Step 3: Run the new container
 echo "==> Starting new container on port ${HOST_PORT}..."
-docker run -d \
+if ! docker run -d \
     --name "${CONTAINER_NAME}" \
     --restart unless-stopped \
     -p "${HOST_PORT}:${CONTAINER_PORT}" \
     -e NODE_ENV=production \
     -e APP_VERSION="${IMAGE_NAME##*:}" \
-    "${IMAGE_NAME}"
+    "${IMAGE_NAME}" >/dev/null; then
+    rollback "New container failed to start."
+fi
 
 # Step 4: Health check verification (Smoke Test)
 echo "==> Running post-deployment health check..."
@@ -69,7 +104,7 @@ else
     echo "❌ Health check failed! Inspecting container logs:"
     docker logs --tail 50 "${CONTAINER_NAME}"
     echo "======================================================================"
-    exit 1
+    rollback "New container did not become healthy."
 fi
 
 # Step 5: Clean up dangling / unused old images to save disk on Free Tier

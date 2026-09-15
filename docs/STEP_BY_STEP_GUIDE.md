@@ -160,7 +160,7 @@ To make Jenkins trigger a build automatically on every `git push`:
 4. Now test automated CD:
    - Make a change in `src/public/index.html` locally.
    - Run `git commit -am "feat: update dashboard"` and `git push origin main`.
-   - Watch GitHub trigger Jenkins via webhook and deploy the update with zero downtime!
+   - Watch GitHub trigger Jenkins via webhook and deploy the update with health verification and automatic rollback on failure.
 
 ---
 

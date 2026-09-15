@@ -18,12 +18,18 @@ sudo apt-get install -y curl wget git gnupg lsb-release ca-certificates apt-tran
 
 # 2. Setup 2GB Swap Memory (Crucial for AWS t2.micro Free Tier)
 echo "==> Checking and setting up Swap memory..."
-if free -h | grep -q "Swap: *0B"; then
-    echo "Creating 2GB swap file..."
-    sudo fallocate -l 2G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
-    sudo chmod 600 /swapfile
-    sudo mkswap /swapfile
-    sudo swapon /swapfile
+if ! swapon --show --noheadings | grep -q .; then
+    echo "Creating or activating 2GB swap file..."
+    if [[ ! -f /swapfile ]]; then
+        sudo fallocate -l 2G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
+        sudo chmod 600 /swapfile
+    else
+        sudo chmod 600 /swapfile
+    fi
+    if ! sudo swapon /swapfile; then
+        sudo mkswap /swapfile
+        sudo swapon /swapfile
+    fi
     if ! grep -q "/swapfile" /etc/fstab; then
         echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
     fi

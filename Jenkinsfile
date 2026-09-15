@@ -14,7 +14,6 @@ pipeline {
         DOCKER_IMAGE_NAME = "devops-cicd-app"
         DOCKER_HUB_USER   = "harshu9671"
         DOCKER_CREDS_ID   = "dockerhub-credentials"
-        IMAGE_TAG         = "${BUILD_NUMBER}-${GIT_COMMIT.take(7)}"
         FULL_IMAGE_NAME   = "${DOCKER_HUB_USER}/${DOCKER_IMAGE_NAME}"
     }
 
@@ -23,6 +22,14 @@ pipeline {
             steps {
                 echo "===> Checking out source code from Git..."
                 checkout scm
+                script {
+                    // GIT_COMMIT is only guaranteed after checkout has completed.
+                    env.GIT_SHA = sh(
+                        script: 'git rev-parse --short=7 HEAD',
+                        returnStdout: true
+                    ).trim()
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}-${env.GIT_SHA}"
+                }
             }
         }
 
@@ -52,6 +59,7 @@ pipeline {
                 // Requires 'Username with password' credential in Jenkins with ID 'dockerhub-credentials'
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
+                        trap 'docker logout >/dev/null 2>&1 || true' EXIT
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker push ${FULL_IMAGE_NAME}:${IMAGE_TAG}
                         docker push ${FULL_IMAGE_NAME}:latest
@@ -62,7 +70,7 @@ pipeline {
 
         stage('5. Deploy Container') {
             steps {
-                echo "===> Deploying container with zero-downtime script..."
+                echo "===> Deploying container with rollback-safe deployment script..."
                 sh '''
                     chmod +x scripts/deploy.sh
                     ./scripts/deploy.sh ${FULL_IMAGE_NAME}:${IMAGE_TAG}

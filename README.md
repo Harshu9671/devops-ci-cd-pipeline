@@ -120,7 +120,8 @@ Check out the dedicated [DevOps Interview Guide](docs/INTERVIEW_GUIDE.md) coveri
 - How to answer questions on swap memory, Docker security, zero-downtime deployments, webhooks vs polling, rollbacks, and secrets management.
 - Ready-to-use resume bullet points.
 
----
+👤 Author
+GitHub:[https://github.com/Harshu9671]
 
 ## 📄 License
 This project is open source and available under the [MIT License](LICENSE).
